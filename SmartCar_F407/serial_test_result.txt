@@ -1,0 +1,27 @@
+﻿port=COM5 time=2026-10-24 20:49:59
+ports on this PC: COM5
+>>> (already in buffer)
+
+>>> help
+help
+
+===== WPT signal source (STM32F407, TIM8 PC6/PA5) =====
+on / off           output on / off  (default OFF after reset)
+f 87000            set frequency in Hz (0.1 .. 500000)
+duty 50            duty cycle %  (keep 50 when driving TB6612)
+dt 300             dead time in ns
+v                  read receiver voltage (PA6, through 10k+10k divider)
+rl 10              load resistor in ohm (for power calculation)
+sw 60000 120000 500  sweep start stop step (Hz), prints CSV + peak
+s                  status        h  help
+Keys: WK_UP +1kHz  KEY0 -1kHz  KEY1 sweep 60-120kHz  KEY2 output on/off
+
+
+>>> sping
+sping
+f_set=87000.0Hz  f_actual=87001.6Hz  duty=50.0%  deadtime=300ns  RL=10.0ohm  output=OFF
+
+>>> sread
+sread
+f_set=87000.0Hz  f_actual=87001.6Hz  duty=50.0%  deadtime=300ns  RL=10.0ohm  output=OFF
+

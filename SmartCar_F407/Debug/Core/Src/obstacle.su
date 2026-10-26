@@ -1,0 +1,8 @@
+../Core/Inc/geom.h:26:21:dist2d	24	static
+../Core/Inc/geom.h:29:23:robot_to_field	64	static
+../Core/Src/obstacle.c:24:6:obs_init	8	static
+../Core/Src/obstacle.c:30:6:obs_enabled	4	static
+../Core/Src/obstacle.c:32:6:obs_reset	8	static
+../Core/Src/obstacle.c:40:6:obs_take_changed	16	static
+../Core/Src/obstacle.c:42:6:obs_update	128	static
+../Core/Src/obstacle.c:96:6:obs_debug	56	static

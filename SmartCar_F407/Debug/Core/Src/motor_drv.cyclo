@@ -1,0 +1,8 @@
+../Core/Src/motor_drv.c:12:12:wr	2
+../Core/Src/motor_drv.c:19:5:motor_drv_init	6
+../Core/Src/motor_drv.c:39:6:motor_drv_ok	1
+../Core/Src/motor_drv.c:40:10:motor_drv_error_count	1
+../Core/Src/motor_drv.c:42:5:motor_drv_set_speed	4
+../Core/Src/motor_drv.c:54:5:motor_drv_set_pwm	4
+../Core/Src/motor_drv.c:66:5:motor_drv_read_counts	3
+../Core/Src/motor_drv.c:78:5:motor_drv_read_battery_mv	2

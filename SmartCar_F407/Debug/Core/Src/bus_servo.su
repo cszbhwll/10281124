@@ -1,0 +1,13 @@
+../Core/Src/bus_servo.c:18:13:send_packet	88	static
+../Core/Src/bus_servo.c:36:12:read_status	104	static
+../Core/Src/bus_servo.c:61:5:servo_ping	24	static
+../Core/Src/bus_servo.c:67:12:write_bytes	48	static
+../Core/Src/bus_servo.c:79:5:servo_torque	24	static
+../Core/Src/bus_servo.c:85:13:put16	32	static
+../Core/Src/bus_servo.c:92:12:get16	24	static
+../Core/Src/bus_servo.c:102:5:servo_write_pos	32	static
+../Core/Src/bus_servo.c:123:5:servo_read_pos	40	static
+../Core/Src/bus_servo.c:133:5:servo_read_byte	40	static
+../Core/Src/bus_servo.c:140:5:servo_set_id	24	static
+../Core/Src/bus_servo.c:157:5:servo_define_middle	24	static
+../Core/Src/bus_servo.c:170:5:servo_sync_write_pos	80	static

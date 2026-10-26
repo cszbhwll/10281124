@@ -1,0 +1,3 @@
+../Core/Src/app.c:24:13:show_ready	1
+../Core/Src/app.c:31:13:beep	1
+../Core/Src/app.c:38:6:app_main	8

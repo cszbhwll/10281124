@@ -1,0 +1,9 @@
+../Core/Src/display.c:9:13:log_init	4	static
+../Core/Src/display.c:10:13:log_clear	4	static
+../Core/Src/display.c:13:13:log_text	24	static
+../Core/Src/display.c:29:6:display_init	8	static
+../Core/Src/display.c:31:6:display_set_backend	16	static
+../Core/Src/display.c:39:6:display_set_task	16	static
+../Core/Src/display.c:52:6:display_set_counts	16	static
+../Core/Src/display.c:54:6:display_set_status	16	static
+../Core/Src/display.c:62:6:display_poll	40	static

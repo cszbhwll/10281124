@@ -1,0 +1,22 @@
+sread
+snudge 2 200
+snudge 2 200
+snudge 2 109
+wait 1000
+snudge 1 -200
+snudge 1 -200
+snudge 1 -200
+snudge 1 -200
+snudge 1 -200
+snudge 1 -200
+snudge 1 -200
+snudge 1 -200
+snudge 1 -40
+wait 1000
+snudge 3 200
+snudge 3 200
+snudge 3 200
+snudge 3 200
+snudge 3 200
+snudge 3 119
+sread

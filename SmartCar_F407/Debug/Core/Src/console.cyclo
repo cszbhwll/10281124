@@ -1,0 +1,8 @@
+../Core/Inc/geom.h:19:21:wrap_pi	3
+../Core/Src/console.c:30:6:console_poll	9
+../Core/Src/console.c:50:12:argi	2
+../Core/Src/console.c:51:14:argf	2
+../Core/Src/console.c:53:13:help	1
+../Core/Src/console.c:84:13:cmd_wheel	2
+../Core/Src/console.c:104:13:execute	85
+../Core/Src/console.c:280:6:console_execute_pending	2

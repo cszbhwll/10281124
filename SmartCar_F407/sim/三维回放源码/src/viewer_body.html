@@ -1,0 +1,145 @@
+<main class="app" id="app">
+  <header class="top">
+    <div class="titleblock">
+      <div class="eyebrow">SMART TRANSPORT · SIMULATION REPLAY</div>
+      <h1>智能搬运小车 · 三维仿真回放</h1>
+      <p class="sub" id="subtitle">等待仿真数据…</p>
+    </div>
+    <div class="topactions">
+      <span class="runstamp" id="runStamp" title="这份数据是哪一次仿真生成的">—</span>
+      <label class="filebtn" title="打开 sim 文件夹里任意一个 replay_*.js 数据文件">打开其他回放数据<input type="file" id="fileInput" accept=".js,.json,.html"></label>
+    </div>
+  </header>
+
+  <div class="banner" id="banner" hidden></div>
+
+  <div class="layout">
+   <div class="maincol">
+    <section class="stage" id="stage">
+      <div class="viewbar">
+        <div class="views" role="group" aria-label="视角">
+          <button data-view="field" class="selected" title="快捷键 1">全场</button>
+          <button data-view="follow" title="快捷键 2">跟车</button>
+          <button data-view="detail" title="快捷键 3">机构近看</button>
+          <button data-view="top" title="快捷键 4">俯视</button>
+        </div>
+        <div class="toggles">
+          <label><input type="checkbox" id="tTrail" checked>轨迹</label>
+          <label><input type="checkbox" id="tLanes" checked>车道网格</label>
+          <label><input type="checkbox" id="tTof" checked>测距光束</label>
+          <label><input type="checkbox" id="tInset" checked>同步近看</label>
+          <button class="iconbutton" id="fullscreen" title="全屏">⛶</button>
+        </div>
+      </div>
+      <div class="viewport" id="viewport">
+        <canvas id="scene" aria-label="三维仿真画面"></canvas>
+        <div class="loading" id="loading"><span>正在加载 CAD 模型…</span></div>
+        <div class="empty" id="empty" hidden>
+          <h2>还没有仿真数据</h2>
+          <p>先运行一次仿真：双击 <b>sim</b> 文件夹里的 <b>编译并运行仿真.bat</b>。<br>它会在同一文件夹生成 <b>replay_latest.js</b>，然后自动打开本页面。</p>
+          <p>也可以点右上角“打开其他回放数据”，或把 <b>replay_*.js</b> 文件拖到这里。</p>
+        </div>
+        <div class="hud">
+          <span class="hudtime" id="hudTime">0.0 s</span>
+          <span id="hudPhase">准备出发</span>
+          <span>车载 <b id="hudOnboard">0</b> / 3</span>
+        </div>
+        <div class="ended" id="endedFlag" hidden></div>
+        <div class="insetlabel" id="insetLabel" data-label="机构同步近看 · CAD 零件"></div>
+        <div class="legend">
+          <div><i style="background:#aeb9be"></i>车道</div>
+          <div><i style="background:#f4edbf"></i>禁行区</div>
+          <div><i style="background:#355edb"></i>启停区</div>
+          <div><i class="trailkey"></i>已走路线</div>
+          <div><i style="background:#1d2226"></i>障碍物</div>
+          <div><i style="background:#d23c35"></i>被车撞到</div>
+          <div><i class="obsfound"></i>程序发现的位置</div>
+          <div><i style="background:#f08a24"></i>测距看到东西</div>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="playrow">
+          <button class="primary" id="play">播放</button>
+          <button class="restart" id="restart" title="回到开头">↺</button>
+          <select id="speed" aria-label="播放速度">
+            <option value="0.5">0.5×</option><option value="1">1×</option><option value="2" selected>2×</option>
+            <option value="5">5×</option><option value="10">10×</option>
+          </select>
+          <span class="clock" id="clock">0.0 / 0.0 s</span>
+          <span class="kbdhint"><kbd>空格</kbd> 播放/暂停　<kbd>←</kbd><kbd>→</kbd> 5 秒　<kbd>1</kbd>–<kbd>4</kbd> 视角</span>
+        </div>
+        <div class="timeline" id="timeline">
+          <div class="tl-segs" id="tlSegs"></div>
+          <div class="tl-ended" id="tlEnded"></div>
+          <div class="tl-marks" id="tlMarks"></div>
+          <div class="tl-limit" id="tlLimit" title="比赛限时 180 秒"></div>
+          <input type="range" id="seek" min="0" max="1000" step="1" value="0" aria-label="时间轴">
+        </div>
+        <div class="tl-legend"><span><i class="k-seg"></i>阶段（悬停看名称）</span><span><i class="k-warn"></i>空夹 / 掉落 / 倒下</span><span><i class="k-bad"></i>越出车道 / 撞障碍物</span><span><i class="k-info"></i>发现障碍物</span><span><i class="k-limit"></i>180 秒限时</span></div>
+      </div>
+    </section>
+    <div class="lower">
+      <section class="card chapterscard">
+        <div class="card-title">流程章节 <span class="tiny">点击跳转</span></div>
+        <div class="chapters" id="chapters"></div>
+      </section>
+      <section class="card logcard">
+        <div class="card-title">程序日志 <span class="tiny">点击一行跳到那个时刻</span>
+          <span class="filters" role="group" aria-label="日志筛选">
+            <button data-f="all" class="selected">全部</button><button data-f="prog">单片机程序</button><button data-f="sim">模拟器事件</button><button data-f="bad">只看问题</button>
+          </span>
+        </div>
+        <div class="log" id="log"></div>
+      </section>
+    </div>
+   </div>
+
+    <aside class="side">
+      <section class="card scorecard">
+        <div class="card-title">成绩估算 <span class="tiny">SCORE</span></div>
+        <div class="scoreline"><b id="scoreBig">—</b><span>分</span><em id="scoreNote"></em></div>
+        <div class="timebar"><div id="timeFill"></div><span id="timeText"></span></div>
+        <table class="breakdown" id="breakdown"></table>
+        <p class="fine">按评分规则摘要估算：读码 1 分、正确抓取 2 分/件、平面放置按环 15/10/7/5/3/1、码垛按底层分、返程 2 分、两项统计各 2 分。越出车道后的动作不计分。</p>
+      </section>
+
+      <section class="card">
+        <div class="card-title">任务码 <span class="tiny">TASK CODE</span></div>
+        <div class="code" id="codeValue">—</div>
+        <div class="code-key" id="codeKey"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">实时状态 <span class="tiny">LIVE</span></div>
+        <h2 class="stage-title" id="stageTitle">准备出发</h2>
+        <div class="stats">
+          <div class="stat" title="单片机程序自己记的抓取次数（屏幕上的 G），评分里“抓取数量统计”看它"><b id="sGrab">0</b><span>程序计抓取 G</span></div>
+          <div class="stat" title="单片机程序自己记的放置次数（屏幕上的 P）"><b id="sPlace">0</b><span>程序计放置 P</span></div>
+          <div class="stat"><b id="sSpeed">0</b><span>车速 mm/s</span></div>
+        </div>
+        <div class="inventory" id="inventory"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">俯视小地图 <span class="tiny">MAP</span></div>
+        <canvas id="map" aria-label="俯视小地图"></canvas>
+      </section>
+
+      <section class="card">
+        <div class="card-title">机械臂侧视 <span class="tiny">ARM</span></div>
+        <canvas id="arm" aria-label="机械臂侧视图"></canvas>
+      </section>
+
+      <section class="card configcard">
+        <div class="card-title">本次仿真用的参数 <span class="tiny">CONFIG</span></div>
+        <table class="config" id="config"></table>
+        <p class="fine">这些数字是编译时从 robot_config.h / field.c 读出来的。改了参数却看到旧数字，说明没重新编译。</p>
+      </section>
+    </aside>
+  </div>
+
+  <footer class="footer">
+    <p>场地与物料按初赛规则；小车为 SolidWorks 装配体网格（31 个组件 / 52 个实体），由单片机比赛程序在电脑仿真器里驱动。</p>
+    <p>仿真结果不等于实车：打滑、标定误差、相机识别、舵机负载都要上车验证。</p>
+  </footer>
+</main>

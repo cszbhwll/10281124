@@ -1,0 +1,12 @@
+../Core/Src/sys.c:29:6:sys_init	1
+../Core/Src/sys.c:35:10:sys_now	1
+../Core/Src/sys.c:37:13:scan_keys	5
+../Core/Src/sys.c:53:6:sys_poll	5
+../Core/Src/sys.c:85:6:sys_wait_ms	3
+../Core/Src/sys.c:91:6:sys_key_pressed	3
+../Core/Src/sys.c:99:6:sys_match_start	1
+../Core/Src/sys.c:100:10:sys_match_elapsed	2
+../Core/Src/sys.c:101:6:sys_match_running	1
+../Core/Src/sys.c:103:6:sys_set_abort	2
+../Core/Src/sys.c:108:6:sys_aborted	1
+../Core/Src/sys.c:110:6:log_printf	2

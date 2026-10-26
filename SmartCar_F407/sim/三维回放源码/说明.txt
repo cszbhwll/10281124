@@ -1,0 +1,16 @@
+三维仿真回放页面的源码（平时不用管这个文件夹）
+
+三维仿真回放.html = 10 月 7 日动画里的 CAD 模型和三维引擎 + 这里的界面代码。
+仿真程序每次运行都会重写 replay_latest.js，页面打开时读它，所以改单片机代码后不需要重新生成页面。
+
+只有想改页面本身（按钮、面板、显示方式）时才需要：
+  1. 改 src 里的 viewer_app.js / viewer.css / viewer_body.html
+  2. 在本文件夹打开命令行，运行（需要装 Python 3）：
+       python build_viewer.py ..\三维仿真回放.html ..\三维仿真回放_新.html
+  3. 用浏览器打开 三维仿真回放_新.html 检查，没问题就替换掉旧文件
+
+文件说明：
+  viewer_app.js    三维场景、机械臂姿态、播放、时间轴、计分、日志等全部逻辑
+  viewer.css       页面样式（含深色模式）
+  viewer_body.html 页面结构
+  build_viewer.py  拼装脚本

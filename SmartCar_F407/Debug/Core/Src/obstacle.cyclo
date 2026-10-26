@@ -1,0 +1,8 @@
+../Core/Inc/geom.h:26:21:dist2d	1
+../Core/Inc/geom.h:29:23:robot_to_field	1
+../Core/Src/obstacle.c:24:6:obs_init	1
+../Core/Src/obstacle.c:30:6:obs_enabled	1
+../Core/Src/obstacle.c:32:6:obs_reset	1
+../Core/Src/obstacle.c:40:6:obs_take_changed	1
+../Core/Src/obstacle.c:42:6:obs_update	16
+../Core/Src/obstacle.c:96:6:obs_debug	6

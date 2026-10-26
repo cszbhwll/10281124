@@ -1,0 +1,3 @@
+../Core/Src/task_code.c:8:13:color_name	16	static
+../Core/Src/task_code.c:14:13:is_perm123	24	static
+../Core/Src/task_code.c:24:6:task_parse	136	static
