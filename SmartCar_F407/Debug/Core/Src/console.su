@@ -3,6 +3,6 @@
 ../Core/Src/console.c:50:12:argi	24	static
 ../Core/Src/console.c:51:14:argf	24	static
 ../Core/Src/console.c:53:13:help	8	static
-../Core/Src/console.c:84:13:cmd_wheel	24	static
-../Core/Src/console.c:104:13:execute	504	static
-../Core/Src/console.c:280:6:console_execute_pending	72	static
+../Core/Src/console.c:85:13:cmd_wheel	24	static
+../Core/Src/console.c:105:13:execute	528	static
+../Core/Src/console.c:317:6:console_execute_pending	72	static

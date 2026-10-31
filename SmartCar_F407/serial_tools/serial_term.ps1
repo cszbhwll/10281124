@@ -4,6 +4,25 @@
 param([string]$Port = 'COM5', [int]$Baud = 115200)
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+# If the requested port does not exist (USB plugged into another socket -> new COM number),
+# find the board automatically: first a CH340 USB-serial port, otherwise the only COM port present.
+function Resolve-Port([string]$want) {
+    $names = @([System.IO.Ports.SerialPort]::GetPortNames())
+    if ($names -contains $want) { return $want }
+    $ch = @()
+    try {
+        $ch = @(Get-CimInstance Win32_PnPEntity -ErrorAction Stop |
+                Where-Object { $_.Name -match 'CH34\d' -and $_.Name -match '\(COM\d+\)' } |
+                ForEach-Object { if ($_.Name -match '\((COM\d+)\)') { $Matches[1] } })
+    } catch { }
+    if ($ch.Count -ge 1) { return $ch[0] }
+    if ($names.Count -eq 1) { return $names[0] }
+    return $want
+}
+
+$asked = $Port
+$Port = Resolve-Port $Port
+if ($Port -ne $asked) { Write-Host "没有 $asked，自动改用板子所在的 $Port" -ForegroundColor Yellow }
 try { $Host.UI.RawUI.WindowTitle = "串口终端 $Port $Baud" } catch { }
 
 $p = New-Object System.IO.Ports.SerialPort $Port, $Baud, ([System.IO.Ports.Parity]::None), 8, ([System.IO.Ports.StopBits]::One)
@@ -16,6 +35,7 @@ try { $p.Open() } catch {
     Write-Host "1) 先把 CubeIDE 里的串口控制台断开（或关掉其它串口软件），同一个串口只能一个程序用；" -ForegroundColor Yellow
     Write-Host "2) 检查 USB 线插在板子的 USB_UART 口上；" -ForegroundColor Yellow
     Write-Host "3) 设备管理器里看看端口号是不是 $Port。" -ForegroundColor Yellow
+    Write-Host ("这台电脑现在有的串口：" + ([System.IO.Ports.SerialPort]::GetPortNames() -join ', ')) -ForegroundColor Yellow
     exit 1
 }
 

@@ -72,7 +72,18 @@
 #define SERVO_ID_YAW             1         /* 底座回转  ST3215 */
 #define SERVO_ID_SHOULDER        2         /* 肩        ST3215 */
 #define SERVO_ID_ELBOW           3         /* 肘        ST3215 */
-#define SERVO_ID_GRIP            1         /* 夹爪      SC09（单独一条总线，ID 可以也是 1） */
+/* 夹爪 SC09 接在哪条总线上：
+ *   1 = 和 3 个 ST3215 同一条总线（现在的接法）：舵机驱动板接口 2 → 6V 降压模块 → SC09。
+ *       同一条总线上 ID 不能重复，所以夹爪用 ID 4（出厂是 1，要先用 sid sc 1 4 改）
+ *   0 = 单独一块舵机驱动板（6V 供电），接 USART6 PC6/PC7，ID 可以也是 1 */
+#define GRIP_ON_ST_BUS           1
+#if GRIP_ON_ST_BUS
+#define SERVO_ID_GRIP            4         /* 夹爪      SC09 */
+#define PORT_UART_GRIP           PORT_UART_SERVO_ST
+#else
+#define SERVO_ID_GRIP            1         /* 夹爪      SC09（单独一条总线） */
+#define PORT_UART_GRIP           PORT_UART_SERVO_SC
+#endif
 
 /* 机械臂几何（来自 10月7日动画模型，换算到车体坐标系；上车后用尺子复核） */
 #define ARM_BASE_X_MM            45.0f     /* 回转轴在车体坐标中的位置：偏车头 */

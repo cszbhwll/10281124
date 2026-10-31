@@ -63,8 +63,8 @@ all: main-build
 main-build: SmartCar_F407.elf secondary-outputs
 
 # Tool invocations
-SmartCar_F407.elf SmartCar_F407.map: $(OBJS) $(USER_OBJS) E:\工创赛文件\SmartCar_F407\STM32F407ZGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "SmartCar_F407.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"E:\工创赛文件\SmartCar_F407\STM32F407ZGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="SmartCar_F407.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+SmartCar_F407.elf SmartCar_F407.map: $(OBJS) $(USER_OBJS) E:\工创赛文件\github\10281124\SmartCar_F407\STM32F407ZGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "SmartCar_F407.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"E:\工创赛文件\github\10281124\SmartCar_F407\STM32F407ZGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="SmartCar_F407.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

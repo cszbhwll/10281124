@@ -63,14 +63,15 @@ static void help(void)
     LOG("imu [0|off|on]      陀螺仪读数；0 累计角度清零；off/on 临时关闭/打开");
     LOG("goto <x> <y> <角度>  走到场地坐标；route 同参数但沿车道走");
     LOG("pose <x> <y> <角度>  设定当前位置；odom 显示当前位置");
-    LOG("sscan               扫描两条舵机总线上的 ID 1~20，打印位置/电压/温度（舵机不动）");
+    LOG("sscan               扫描舵机总线上的 ID 1~20，打印位置/电压/温度（舵机不动）");
     LOG("snudge <ID> <步数>  ST3215 从当前位置慢慢转一小步（±200 以内，4096 步 = 一圈）");
-    LOG("sfree <ID>          该 ST3215 卸力（可以用手掰）");
+    LOG("snudge g <步数>     夹爪 SC09 慢慢转一小步（±60 以内，1024 步 = 300°）");
+    LOG("sfree <ID>          该 ST3215 卸力（可以用手掰）；sfree g 夹爪卸力");
     LOG("scal <ID>           ST3215 中位校准：把它现在的位置定义为 2048（掉电保存，舵机不动）");
     LOG("sping               检查 4 个舵机（只检查，不动）；sread 读舵机原始位置");
     LOG("storque <0/1>       舵机卸力/上力（卸力后可用手掰，配合 sread 示教）");
     LOG("sraw <关节0-3> <值> 单独转一个舵机（0回转 1肩 2肘 3夹爪）");
-    LOG("sid <st|sc> <旧ID> <新ID>  改舵机 ID（总线上只接一个）");
+    LOG("sid <st|sc> <旧ID> <新ID>  改舵机 ID（总线上只接一个）；夹爪 SC09：sid sc 1 4");
     LOG("arm <x> <y> <z>     机械臂夹持中心移动到车体坐标；ik 同参数只计算不动");
     LOG("grip <o|c>          夹爪开/合；fold 折叠；home 行车姿态");
     LOG("slot <0-2> <p|t>    放进(p)/取出(t)第 k 个载物槽");
@@ -174,7 +175,7 @@ static void execute(char *line)
         static const uint8_t ID[4] = { SERVO_ID_YAW, SERVO_ID_SHOULDER, SERVO_ID_ELBOW, SERVO_ID_GRIP };
         int ok = 0;
         for (int j = 0; j < 4; j++) {
-            servo_t s = { j < 3 ? PORT_UART_SERVO_ST : PORT_UART_SERVO_SC, j < 3 ? SERVO_STS : SERVO_SCS, ID[j] };
+            servo_t s = { j < 3 ? PORT_UART_SERVO_ST : PORT_UART_GRIP, j < 3 ? SERVO_STS : SERVO_SCS, ID[j] };
             bool r = servo_ping(&s) == 0;
             ok += r;
             LOG("%s%u  %s", NAME[j], ID[j], r ? "有应答" : "无应答");
@@ -184,18 +185,38 @@ static void execute(char *line)
     else if (!strcmp(c, "sscan")) {
         int found = 0;
         for (int bus = 0; bus < 2; bus++) {
+            if (bus == 1 && GRIP_ON_ST_BUS) break;        /* 夹爪也在 ST 总线上时，USART6 上什么都没接 */
             for (uint8_t id = 1; id <= 20; id++) {
-                servo_t s = { bus ? PORT_UART_SERVO_SC : PORT_UART_SERVO_ST, bus ? SERVO_SCS : SERVO_STS, id };
+                /* 电压/温度寄存器两个系列一样；位置的字节顺序不同：配置里的夹爪 ID 按 SC09 读，其余按 ST3215 读 */
+                bool grip = (bus == 0) ? (GRIP_ON_ST_BUS && id == SERVO_ID_GRIP) : true;
+                servo_t s = { bus ? PORT_UART_SERVO_SC : PORT_UART_SERVO_ST, grip ? SERVO_SCS : SERVO_STS, id };
                 if (servo_ping(&s) != 0) continue;
                 int pos = -1; uint8_t v = 0, t = 0;
                 servo_read_pos(&s, &pos);
                 servo_read_byte(&s, SREG_VOLTAGE, &v);
                 servo_read_byte(&s, SREG_TEMP, &t);
-                LOG("%s 总线  ID %2u  位置 %4d  电压 %d.%dV  温度 %u°C", bus ? "SC" : "ST", id, pos, v / 10, v % 10, t);
+                LOG("%s 总线  ID %2u  %s  位置 %4d  电压 %d.%dV  温度 %u°C", bus ? "SC" : "ST", id,
+                    grip ? "SC09夹爪" : "ST3215  ", pos, v / 10, v % 10, t);
+                if (v > 75 && grip) LOG("  !! 夹爪电压 %d.%dV 超过 7.5V：降压模块没接对，马上断电！", v / 10, v % 10);
                 found++;
             }
         }
         LOG("共找到 %d 个舵机。注意：几个舵机 ID 相同时只会显示成 1 个，而且一起动——先一个一个改 ID", found);
+        LOG("（SC09 出厂 ID 1 时会被当成 ST3215 读，位置数不准，改成 ID %d 后就正常了）", SERVO_ID_GRIP);
+    }
+    else if (!strcmp(c, "snudge") && n >= 3 && a[1][0] == 'g') {
+        /* 夹爪 SC09：1024 步 = 300°，一次最多 ±60 步 ≈ ±18° */
+        servo_t s = { PORT_UART_GRIP, SERVO_SCS, SERVO_ID_GRIP };
+        int d = atoi(a[2]), pos;
+        if (d > 60) d = 60;
+        if (d < -60) d = -60;
+        if (servo_read_pos(&s, &pos) != 0) { LOG("夹爪 SC09 ID %u 无应答", s.id); return; }
+        servo_torque(&s, true);
+        servo_write_pos(&s, pos + d, 100, 0);
+        sys_wait_ms((uint32_t)(abs(d) * 1000 / 100 + 300));
+        int now = -1;
+        servo_read_pos(&s, &now);
+        LOG("夹爪 SC09 ID %u：%d → 目标 %d，现在 %d（%+d 步 ≈ %+d°）", s.id, pos, pos + d, now, d, d * 300 / 1024);
     }
     else if (!strcmp(c, "snudge") && n >= 3) {
         servo_t s = { PORT_UART_SERVO_ST, SERVO_STS, (uint8_t)atoi(a[1]) };
@@ -219,6 +240,10 @@ static void execute(char *line)
         servo_read_pos(&s, &after);
         LOG("ST ID %u 中位校准%s：校准前读数 %d，校准后读数 %d（应接近 2048）", s.id, r == 0 ? "完成" : "可能失败", before, after);
     }
+    else if (!strcmp(c, "sfree") && n >= 2 && a[1][0] == 'g') {
+        servo_t s = { PORT_UART_GRIP, SERVO_SCS, SERVO_ID_GRIP };
+        LOG("夹爪 SC09 ID %u %s", s.id, servo_torque(&s, false) == 0 ? "已卸力" : "无应答");
+    }
     else if (!strcmp(c, "sfree") && n >= 2) {
         servo_t s = { PORT_UART_SERVO_ST, SERVO_STS, (uint8_t)atoi(a[1]) };
         LOG("ST ID %u %s", s.id, servo_torque(&s, false) == 0 ? "已卸力" : "无应答");
@@ -232,7 +257,19 @@ static void execute(char *line)
     else if (!strcmp(c, "sraw")) arm_write_raw(argi(a, n, 1, 0), argi(a, n, 2, 2048));
     else if (!strcmp(c, "sid") && n >= 4) {
         bool st = !strcmp(a[1], "st");
-        servo_t s = { st ? PORT_UART_SERVO_ST : PORT_UART_SERVO_SC, st ? SERVO_STS : SERVO_SCS, (uint8_t)atoi(a[2]) };
+        servo_t s = { st ? PORT_UART_SERVO_ST : PORT_UART_GRIP, st ? SERVO_STS : SERVO_SCS, (uint8_t)atoi(a[2]) };
+        if (!st && GRIP_ON_ST_BUS) {
+            /* 夹爪和 ST3215 在同一条总线上：改 SC09 的 ID 时 ST3215 必须拔掉，
+               否则 ID 1 的底座舵机会一起收到改 ID 命令（两个系列的寄存器不同，会把底座搞乱） */
+            for (uint8_t id = 1; id <= 3; id++) {
+                servo_t t = { PORT_UART_SERVO_ST, SERVO_STS, id };
+                if (id != s.id && servo_ping(&t) == 0) {
+                    LOG("总线上还有 ID %u 的舵机在应答：先把 3 个 ST3215 的线拔掉，只留夹爪，再改 ID", id);
+                    return;
+                }
+            }
+        }
+        if (servo_ping(&s) != 0) { LOG("ID %u 没有应答，检查接线/供电", s.id); return; }
         LOG("%s", servo_set_id(&s, (uint8_t)atoi(a[3])) == 0 ? "改 ID 成功" : "改 ID 失败");
     }
     else if (!strcmp(c, "arm") || !strcmp(c, "ik")) {

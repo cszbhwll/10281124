@@ -1,22 +1,23 @@
-22:24:24  HEX file: E:\工创赛文件\SmartCar_F407\Debug\SmartCar_F407.hex  ->  98304 bytes
-22:24:26  bootloader OK (boot line RTS=True, reset line DTR=False)
-22:24:26  chip id 0x413 (0x413 = STM32F405/407)
-22:24:26  erasing flash (about 10-30 s) ...
-22:24:44  erase done
-22:24:45  written 8192 / 98304 bytes
-22:24:46  written 16384 / 98304 bytes
-22:24:47  written 24576 / 98304 bytes
-22:24:48  written 32768 / 98304 bytes
-22:24:49  written 40960 / 98304 bytes
-22:24:50  written 49152 / 98304 bytes
-22:24:52  written 57344 / 98304 bytes
-22:24:53  written 65536 / 98304 bytes
-22:24:54  written 73728 / 98304 bytes
-22:24:55  written 81920 / 98304 bytes
-22:24:56  written 90112 / 98304 bytes
-22:24:57  written 98304 / 98304 bytes
-22:24:57  write done, 98304 bytes
-22:25:10  verify OK
-22:25:12  program started. First output from the board:
+22:36:58  COM5 not found, using COM7 (the board's USB-serial port)
+22:37:00  HEX file: E:\工创赛文件\github\10281124\SmartCar_F407\Debug\SmartCar_F407.hex  ->  99840 bytes
+22:37:02  bootloader OK (boot line RTS=True, reset line DTR=False)
+22:37:02  chip id 0x413 (0x413 = STM32F405/407)
+22:37:02  erasing flash (about 10-30 s) ...
+22:37:20  erase done
+22:37:21  written 8192 / 99840 bytes
+22:37:22  written 16384 / 99840 bytes
+22:37:23  written 24576 / 99840 bytes
+22:37:24  written 32768 / 99840 bytes
+22:37:26  written 40960 / 99840 bytes
+22:37:27  written 49152 / 99840 bytes
+22:37:28  written 57344 / 99840 bytes
+22:37:29  written 65536 / 99840 bytes
+22:37:30  written 73728 / 99840 bytes
+22:37:31  written 81920 / 99840 bytes
+22:37:32  written 90112 / 99840 bytes
+22:37:34  written 98304 / 99840 bytes
+22:37:34  write done, 99840 bytes
+22:37:47  verify OK
+22:37:50  program started. First output from the board:
 
-22:25:12  DONE
+22:37:50  DONE

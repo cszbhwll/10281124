@@ -2,6 +2,22 @@
 # and save everything the board prints to serial_cmd_result.txt.
 # Each line of serial_cmds.txt is one command; a line "wait 3000" just waits 3000 ms.
 param([string]$Port = 'COM5')
+# If the requested port does not exist (USB plugged into another socket -> new COM number),
+# find the board automatically: first a CH340 USB-serial port, otherwise the only COM port present.
+function Resolve-Port([string]$want) {
+    $names = @([System.IO.Ports.SerialPort]::GetPortNames())
+    if ($names -contains $want) { return $want }
+    $ch = @()
+    try {
+        $ch = @(Get-CimInstance Win32_PnPEntity -ErrorAction Stop |
+                Where-Object { $_.Name -match 'CH34\d' -and $_.Name -match '\(COM\d+\)' } |
+                ForEach-Object { if ($_.Name -match '\((COM\d+)\)') { $Matches[1] } })
+    } catch { }
+    if ($ch.Count -ge 1) { return $ch[0] }
+    if ($names.Count -eq 1) { return $names[0] }
+    return $want
+}
+$Port = Resolve-Port $Port
 $dir = $PSScriptRoot
 $log = Join-Path $dir 'serial_cmd_result.txt'
 $cmds = Join-Path $dir 'serial_cmds.txt'

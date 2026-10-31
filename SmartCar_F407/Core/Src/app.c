@@ -51,6 +51,7 @@ void app_main(void)
     LOG("==== 舵机测试模式：机械臂上电不动 ====");
     LOG("先输入 sscan 看总线上有哪些舵机；snudge <ID> <步数> 小幅度转（最多 ±200 步 ≈ ±17°）；sfree <ID> 卸力");
     LOG("三个舵机出厂 ID 都是 1：改 ID 时总线上只能接一个（sid st 1 2 / sid st 1 3）");
+    LOG("夹爪 SC09：只接夹爪时 sid sc 1 4；之后 snudge g <步数> 小幅度转，sfree g 卸力");
 #else
     if (arm_init() != 0)       LOG("警告：有舵机未应答，机械臂可能不完整");
 #endif

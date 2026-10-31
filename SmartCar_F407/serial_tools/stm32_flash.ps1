@@ -5,11 +5,31 @@ param([string]$Port = 'COM5', [Parameter(Mandatory = $true)][string]$Hex)
 
 $log = Join-Path $PSScriptRoot 'flash_result.txt'
 if (Test-Path $log) { Remove-Item $log }
+# If the requested port does not exist (USB plugged into another socket -> new COM number),
+# find the board automatically: first a CH340 USB-serial port, otherwise the only COM port present.
+function Resolve-Port([string]$want) {
+    $names = @([System.IO.Ports.SerialPort]::GetPortNames())
+    if ($names -contains $want) { return $want }
+    $ch = @()
+    try {
+        $ch = @(Get-CimInstance Win32_PnPEntity -ErrorAction Stop |
+                Where-Object { $_.Name -match 'CH34\d' -and $_.Name -match '\(COM\d+\)' } |
+                ForEach-Object { if ($_.Name -match '\((COM\d+)\)') { $Matches[1] } })
+    } catch { }
+    if ($ch.Count -ge 1) { return $ch[0] }
+    if ($names.Count -eq 1) { return $names[0] }
+    return $want
+}
+
 function L([string]$m) {
     $line = (Get-Date -Format 'HH:mm:ss') + '  ' + $m
     Write-Host $line
     Add-Content -Path $log -Value $line
 }
+
+$asked = $Port
+$Port = Resolve-Port $Port
+if ($Port -ne $asked) { L "$asked not found, using $Port (the board's USB-serial port)" }
 
 # ---------- 1. read the HEX file into a flat image starting at 0x08000000 ----------
 $FLASH = [uint32]0x08000000
@@ -39,7 +59,7 @@ L ("HEX file: $Hex  ->  {0} bytes" -f $top)
 $p = New-Object System.IO.Ports.SerialPort $Port, 115200, ([System.IO.Ports.Parity]::Even), 8, ([System.IO.Ports.StopBits]::One)
 $p.ReadTimeout = 1000
 $p.WriteTimeout = 3000
-try { $p.Open() } catch { L ("ERROR: cannot open $Port (close any serial-port program first): " + $_.Exception.Message); exit 1 }
+try { $p.Open() } catch { L ("ERROR: cannot open $Port (close any serial-port program first; is the USB cable in the USB_UART socket?): " + $_.Exception.Message); L ('COM ports on this PC: ' + ([System.IO.Ports.SerialPort]::GetPortNames() -join ', ')); exit 1 }
 
 function Send([byte[]]$d) { $p.Write($d, 0, $d.Length) }
 function SendX([byte[]]$d) {            # data + XOR checksum

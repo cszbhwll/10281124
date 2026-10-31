@@ -346,32 +346,35 @@ static void servo_reply(int ch, uint8_t id, const uint8_t *prm, int n)
 
 static void servo_packet(int ch, const uint8_t *b, int n)
 {
-    bool scs = (ch == PORT_UART_SERVO_SC);
-    sv_t *bank = scs ? sc : st;
-    int maxid = scs ? 1 : 3;
     uint8_t id = b[2], inst = b[4];
     const uint8_t *p = &b[5];
     (void)n;
-    if (inst == 0x83) {                         /* 同步写 */
+    /* 夹爪 SC09 在哪条总线、用哪个 ID 由 robot_config.h 决定（GRIP_ON_ST_BUS） */
+    bool scs = (ch == PORT_UART_GRIP && id == SERVO_ID_GRIP);
+    if (inst == 0x83) {                         /* 同步写：只给 ST3215 用 */
+        if (ch != PORT_UART_SERVO_ST) return;
         int L = p[1], cnt = (b[3] - 4) / (L + 1);
         for (int k = 0; k < cnt; k++) {
             const uint8_t *e = &p[2 + k * (L + 1)];
             int sid = e[0];
-            if (sid < 1 || sid > maxid) continue;
-            bank[sid].goal = e[2] | (e[3] << 8);
-            bank[sid].speed = e[6] | (e[7] << 8);
+            if (sid < 1 || sid > 3) continue;
+            st[sid].goal = e[2] | (e[3] << 8);
+            st[sid].speed = e[6] | (e[7] << 8);
         }
         return;
     }
-    if (id < 1 || id > maxid) return;            /* 不存在的舵机：不回复 */
+    sv_t *sv;
+    if (scs) sv = &sc[1];
+    else if (ch == PORT_UART_SERVO_ST && id >= 1 && id <= 3) sv = &st[id];
+    else return;                                 /* 不存在的舵机：不回复 */
     if (inst == 0x01) { servo_reply(ch, id, NULL, 0); return; }
     if (inst == 0x02 && p[0] == 66) {                       /* 读"是否在运动" */
-        uint8_t mv = fabsf((float)bank[id].goal - bank[id].pos) > 2.0f ? 1 : 0;
+        uint8_t mv = fabsf((float)sv->goal - sv->pos) > 2.0f ? 1 : 0;
         servo_reply(ch, id, &mv, 1);
         return;
     }
     if (inst == 0x02) {
-        int pos = (int)lroundf(bank[id].pos);
+        int pos = (int)lroundf(sv->pos);
         uint8_t r[2];
         if (scs) { r[0] = (uint8_t)(pos >> 8); r[1] = (uint8_t)pos; } else { r[0] = (uint8_t)pos; r[1] = (uint8_t)(pos >> 8); }
         servo_reply(ch, id, r, 2);
@@ -379,11 +382,11 @@ static void servo_packet(int ch, const uint8_t *b, int n)
     }
     if (inst == 0x03) {
         uint8_t reg = p[0];
-        if (!scs && reg == 41) { bank[id].goal = p[2] | (p[3] << 8); bank[id].speed = p[6] | (p[7] << 8); }
+        if (!scs && reg == 41) { sv->goal = p[2] | (p[3] << 8); sv->speed = p[6] | (p[7] << 8); }
         if (scs && reg == 42) {
             int goal = (p[1] << 8) | p[2];
-            bank[id].speed = (p[5] << 8) | p[6];
-            bank[id].goal = goal;
+            sv->speed = (p[5] << 8) | p[6];
+            sv->goal = goal;
             if (goal < (GRIP_RAW_OPEN + GRIP_RAW_CLOSE) / 2) grip_close(); else grip_open();
         }
         servo_reply(ch, id, NULL, 0);
