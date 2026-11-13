@@ -1,8 +1,10 @@
 ../Core/Inc/geom.h:19:21:wrap_pi	3
-../Core/Src/console.c:30:6:console_poll	9
-../Core/Src/console.c:50:12:argi	2
-../Core/Src/console.c:51:14:argf	2
-../Core/Src/console.c:53:13:help	1
-../Core/Src/console.c:85:13:cmd_wheel	2
-../Core/Src/console.c:105:13:execute	105
-../Core/Src/console.c:317:6:console_execute_pending	2
+../Core/Src/console.c:32:12:cmd_servo_baud	5
+../Core/Src/console.c:47:13:cmd_servo_probe	8
+../Core/Src/console.c:81:6:console_poll	9
+../Core/Src/console.c:101:12:argi	2
+../Core/Src/console.c:102:14:argf	2
+../Core/Src/console.c:104:13:help	1
+../Core/Src/console.c:139:13:cmd_wheel	2
+../Core/Src/console.c:159:13:execute	155
+../Core/Src/console.c:420:6:console_execute_pending	2

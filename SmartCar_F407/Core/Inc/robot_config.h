@@ -50,7 +50,7 @@
 /* 舵机单独测试模式：1 = 上电后机械臂不动（不上力、不收折叠姿态），只等串口命令，
  * 用来第一次接舵机时小幅度试转（sscan / snudge 命令，见 README 5.5）。比赛前一定改回 0。 */
 #ifndef SERVO_TEST_MODE
-#define SERVO_TEST_MODE          0
+#define SERVO_TEST_MODE          1
 #endif
 
 /* ======================= 2. 导航（走位） ======================= */
@@ -86,6 +86,22 @@
 #endif
 
 /* 机械臂几何（来自 10月7日动画模型，换算到车体坐标系；上车后用尺子复核） */
+#define SERVO_ID_PITCH           5         /* 新增腕部俯仰 SC09；独立标定后再接入自动动作 */
+#define PORT_UART_PITCH          PORT_UART_GRIP
+
+/* 2026-11-13 地面取放示教参考（用户确认是大致姿态，三次串口读取一致）。
+ * 回转/肩/肘/俯仰同步记录；不包含ID4夹爪开合；尚未验证上力复现、抓取高度和重复精度。
+ * ID5实测设定行程20~1003；手摆读数1022超过上限，待舵盘安装相位重新对中后重教；此姿态不可自动调用。
+ * 这是工作姿态参考，不能替代关节零位标定；现有IK几何与限位也需按当前机构重新核对。
+ */
+#define GROUND_TEACH_YAW_RAW        1690
+#define GROUND_TEACH_SHOULDER_RAW   3664
+#define GROUND_TEACH_ELBOW_RAW      463
+#define GROUND_TEACH_PITCH_RAW      1022
+#define GROUND_TEACH_VALIDATED      0
+#define PITCH_UP_RAW_SIGN          (+1) /* 实测：ID5读数增加为上仰，减少为下俯 */
+
+
 #define ARM_BASE_X_MM            45.0f     /* 回转轴在车体坐标中的位置：偏车头 */
 #define ARM_BASE_Y_MM           -45.0f     /* 偏车的右侧 */
 #define ARM_SHOULDER_R0_MM      -10.4f     /* 肩轴离回转轴的水平距离：负号 = 肩轴在回转轴"后面"（与小臂伸出方向相反），按 CAD 核对 */
@@ -132,9 +148,13 @@
 #define ELBOW_MAX_DEG            12.0f     /* 读数 0 在 +18°，留 6° 余量 */
 
 /* 夹爪 SC09 原始位置——【标定】 */
-#define GRIP_RAW_OPEN            700       /* 张开到能套住 Ø30 顶部 */
-#define GRIP_RAW_CLOSE           420       /* 夹紧（命令值，会被物料挡住） */
-#define GRIP_RAW_EMPTY_CLOSED    400       /* 空夹时实际能走到的位置：读回接近它说明没夹到 */
+#define GRIP_RAW_OPEN            750       /* 2026-11-13 开口大小经用户确认；本次从更大开口回收，下发750、反馈740。反向返回待复核 */
+#define GRIP_RAW_CLOSE           884       /* 仅保留试验占位，尚未定型：884、914保持试夹均被用户确认易滑动 */
+/* 2026-11-13：向980分段试探，在实际目标964、反馈约910时，负载幅值840超过测试阈值650，已自动卸力。
+ * 用户补充：继续加紧后夹持已有改善，后续增加防滑材料；最终夹持值、重复开合和空夹判断留待复测。
+ * 650是本轮测试软件停止阈值，非舵机额定极限；loadRaw去方向位后反映电机PWM控制输出，非夹持力测量。
+ * 当前保持SERVO_TEST_MODE=1；884仅保留为未定型试验占位，不能视为夹持验收通过。 */
+#define GRIP_RAW_EMPTY_CLOSED    400       /* 旧占位值，待实测空夹闭合位置 */
 #define GRIP_EMPTY_THRESHOLD     25        /* 读回值与空夹位置相差小于它 → 判定没夹到 */
 
 /* 舵机运动速度（计数/秒）与加速度 */

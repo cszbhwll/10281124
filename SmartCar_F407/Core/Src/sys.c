@@ -62,9 +62,13 @@ void sys_poll(void)
         uint32_t dt = now - s_last_ctrl;
         if (dt > 100) dt = CTRL_PERIOD_MS;        /* 长时间阻塞后不要用异常大的 dt */
         s_last_ctrl = now;
+#if !SERVO_TEST_MODE
         obs_update();                             /* 避障：读测距传感器，更新障碍物地图 */
         nav_update();                             /* 走位控制器：算出这个周期的目标速度 */
         chassis_update((float)dt / 1000.0f);      /* 底盘：读编码器、下发轮速 */
+#else
+        (void)dt;
+#endif
     }
 
     /* 2) 按键：10ms 扫描一次 */

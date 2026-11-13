@@ -13,7 +13,11 @@ void SystemClock_Config(void);
 
 int main(void)
 {
-    HAL_Init();
+	/* Restore application vectors after UART bootloader GO. */
+	    SCB->VTOR = FLASH_BASE;
+	    __DSB();
+	    __ISB();
+	    HAL_Init();
     SystemClock_Config();
     app_main();
     while (1) {}
